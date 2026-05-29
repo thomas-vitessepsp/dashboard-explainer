@@ -215,32 +215,55 @@ const ExplainPanel = ({ openTopic, setOpenTopic }) => {
 
   // When embedded in a full-height iframe, the iframe document never scrolls,
   // so CSS `position: sticky` can't fire. The parent page posts its scroll
-  // position; we translate the panel to stay pinned to the top of the visible
-  // area and release at the panel's bottom. Falls back to CSS sticky standalone.
+  // position (plus its header height and viewport height); we translate the
+  // panel to stay pinned just below the header, and release at the panel's
+  // bottom. If the open content is taller than the space below the header we
+  // drop stickiness entirely so its bottom stays reachable by scrolling.
   React.useEffect(() => {
     const section = sectionRef.current;
     const sticky = stickyRef.current;
     if (!section || !sticky) return;
     let frame = 0;
+    const last = { iframeTop: 0, viewportH: window.innerHeight, topOffset: 0 };
 
-    function apply(iframeTop) {
-      const scrolledPast = Math.max(0, -iframeTop);
-      const maxShift = Math.max(0, section.offsetHeight - sticky.offsetHeight);
-      const shift = Math.min(scrolledPast, maxShift);
+    function apply() {
+      const avail = last.viewportH - last.topOffset;
+      let shift;
+      if (sticky.offsetHeight > avail) {
+        // Content doesn't fit below the header — let it scroll naturally.
+        shift = 0;
+      } else {
+        const maxShift = Math.max(0, section.offsetHeight - sticky.offsetHeight);
+        shift = Math.min(Math.max(0, last.topOffset - last.iframeTop), maxShift);
+      }
       sticky.style.transform = "translateY(" + shift + "px)";
+    }
+
+    function schedule() {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(apply);
     }
 
     function onMessage(e) {
       const d = e.data;
       if (!d || d.type !== "parent-scroll") return;
-      cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(() => apply(d.iframeTop));
+      last.iframeTop = d.iframeTop || 0;
+      if (typeof d.viewportH === "number") last.viewportH = d.viewportH;
+      if (typeof d.topOffset === "number") last.topOffset = d.topOffset;
+      schedule();
     }
 
     window.addEventListener("message", onMessage);
+    // Re-apply when the panel's own height changes (accordion open/close).
+    const ro = window.ResizeObserver ? new ResizeObserver(schedule) : null;
+    if (ro) ro.observe(sticky);
     // Tell the parent we're ready to receive scroll updates.
     try { window.parent.postMessage({ type: "explain-ready" }, "*"); } catch (err) {}
-    return () => { window.removeEventListener("message", onMessage); cancelAnimationFrame(frame); };
+    return () => {
+      window.removeEventListener("message", onMessage);
+      if (ro) ro.disconnect();
+      cancelAnimationFrame(frame);
+    };
   }, []);
 
   return (
