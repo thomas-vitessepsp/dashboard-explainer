@@ -210,8 +210,41 @@ const AccordionItem = ({ topic, open, onClick, index }) => {
 };
 
 const ExplainPanel = ({ openTopic, setOpenTopic }) => {
+  const sectionRef = React.useRef(null);
+  const stickyRef = React.useRef(null);
+
+  // When embedded in a full-height iframe, the iframe document never scrolls,
+  // so CSS `position: sticky` can't fire. The parent page posts its scroll
+  // position; we translate the panel to stay pinned to the top of the visible
+  // area and release at the panel's bottom. Falls back to CSS sticky standalone.
+  React.useEffect(() => {
+    const section = sectionRef.current;
+    const sticky = stickyRef.current;
+    if (!section || !sticky) return;
+    let frame = 0;
+
+    function apply(iframeTop) {
+      const scrolledPast = Math.max(0, -iframeTop);
+      const maxShift = Math.max(0, section.offsetHeight - sticky.offsetHeight);
+      const shift = Math.min(scrolledPast, maxShift);
+      sticky.style.transform = "translateY(" + shift + "px)";
+    }
+
+    function onMessage(e) {
+      const d = e.data;
+      if (!d || d.type !== "parent-scroll") return;
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => apply(d.iframeTop));
+    }
+
+    window.addEventListener("message", onMessage);
+    // Tell the parent we're ready to receive scroll updates.
+    try { window.parent.postMessage({ type: "explain-ready" }, "*"); } catch (err) {}
+    return () => { window.removeEventListener("message", onMessage); cancelAnimationFrame(frame); };
+  }, []);
+
   return (
-    <section data-explain-panel style={{
+    <section ref={sectionRef} data-explain-panel style={{
       flex: "3 1 360px",
       minWidth: 0,
       alignSelf: "stretch",
@@ -220,9 +253,10 @@ const ExplainPanel = ({ openTopic, setOpenTopic }) => {
       fontFamily: "var(--font-body)",
       color: "#0A0A0A"
     }}>
-      <div style={{
+      <div ref={stickyRef} style={{
         position: "sticky",
         top: 0,
+        willChange: "transform",
         padding: "28px 28px 40px"
       }}>
       <div style={{
