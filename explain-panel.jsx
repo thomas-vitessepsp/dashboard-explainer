@@ -223,10 +223,11 @@ const ExplainPanel = ({ openTopic, setOpenTopic }) => {
       <div style={{
         position: "sticky",
         top: 0,
-        maxHeight: "100vh",
-        overflowY: "auto",
-        overflowX: "hidden",
-        scrollbarGutter: "stable",
+        height: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        overflow: "hidden",
         padding: "28px 28px 40px"
       }}>
       <div style={{
