@@ -441,7 +441,7 @@ const Dashboard = () => {
       color: "#0A0A0A"
     }}>
     <ExplainPanel openTopic={openTopic} setOpenTopic={setOpenTopic} />
-    <main style={{ flex: "1 1 900px", minWidth: 0, padding: "28px 36px 80px", display: "flex", flexDirection: "column", gap: 24 }}>
+    <main style={{ flex: "1 1 900px", minWidth: 0, padding: "28px 36px", display: "flex", flexDirection: "column", gap: 24 }}>
       <h1 style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: 28, fontWeight: 400, letterSpacing: "-0.04em" }}>Portfolio Overview</h1>
 
       {/* filters */}
