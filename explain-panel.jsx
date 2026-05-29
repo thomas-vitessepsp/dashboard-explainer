@@ -216,32 +216,57 @@ const ExplainPanel = ({ openTopic, setOpenTopic }) => {
   // When embedded in a full-height iframe, the iframe document never scrolls,
   // so CSS `position: sticky` can't fire. The parent posts its scroll position
   // and header height; we translate the panel to stay pinned just below the
-  // header, releasing only at the bottom of its column. The pin is independent
-  // of the panel's own height, so expanding an accordion never moves it.
+  // header. When an accordion item is open, we nudge the panel up just enough
+  // to bring that item's full content into view (without pushing its top above
+  // the header), so opening an item never hides its content below the fold.
+  const ctlRef = React.useRef(null);
   React.useEffect(() => {
     const section = sectionRef.current;
     const sticky = stickyRef.current;
     if (!section || !sticky) return;
     const last = { iframeTop: 0, viewportH: window.innerHeight, topOffset: 0 };
-    // The travel distance is frozen against the COLLAPSED panel height and the
-    // column height, both of which are stable while the user interacts. We
-    // deliberately ignore accordion open/close height changes here: the pin
-    // target depends only on the header offset, so opening an item (e.g. by
-    // hovering a widget) never repositions the panel.
+    // Travel distance frozen against the COLLAPSED panel + column height (both
+    // stable during interaction) so accordion height changes can't make it jump.
     let maxShift = 0;
     function measure() {
-      const colH = section.offsetHeight;       // full column (driven by widgets)
-      const contentH = sticky.offsetHeight;    // current panel height
-      maxShift = Math.max(0, colH - contentH); // furthest it can travel down
+      maxShift = Math.max(0, section.offsetHeight - sticky.offsetHeight);
+    }
+
+    // Geometry of the currently-open accordion item, relative to the panel top.
+    // (Transform cancels out because we subtract the panel's own rect.)
+    let anchorTop = 0, anchorH = 0;
+    function readAnchor() {
+      const openBtn = sticky.querySelector('button[aria-expanded="true"]');
+      if (!openBtn) { anchorTop = 0; anchorH = 0; return; }
+      const item = openBtn.parentElement;
+      const sRect = sticky.getBoundingClientRect();
+      const iRect = item.getBoundingClientRect();
+      anchorTop = iRect.top - sRect.top;
+      anchorH = iRect.height;
     }
 
     function apply() {
-      const it = last.iframeTop;               // iframe top in viewport coords
-      // Pin the panel just below the header. Target is independent of content
-      // height, so it stays put when an accordion expands.
-      let shift = last.topOffset - it;
-      if (shift < 0) shift = 0;                // never above its natural top
-      if (shift > maxShift) shift = maxShift;  // release at the column's bottom
+      const it = last.iframeTop;
+      const top = last.topOffset;
+      const vh = last.viewportH;
+      // Base: pin the panel just below the header.
+      let pin = top - it;
+      if (pin < 0) pin = 0;
+      if (pin > maxShift) pin = maxShift;
+      let shift = pin;
+      // If an open item's content runs past the viewport bottom, move the panel
+      // up — but only as far as keeping the item's TOP at the header line.
+      if (anchorH > 0) {
+        const itemTop = it + pin + anchorTop;
+        const itemBottom = itemTop + anchorH;
+        const overflow = itemBottom - vh;
+        if (overflow > 0) {
+          const room = Math.max(0, itemTop - top);
+          shift = pin - Math.min(overflow, room);
+        }
+      }
+      if (shift < 0) shift = 0;
+      if (shift > maxShift) shift = maxShift;
       sticky.style.transform = "translateY(" + shift + "px)";
     }
 
@@ -251,24 +276,62 @@ const ExplainPanel = ({ openTopic, setOpenTopic }) => {
       last.iframeTop = d.iframeTop || 0;
       if (typeof d.viewportH === "number") last.viewportH = d.viewportH;
       if (typeof d.topOffset === "number") last.topOffset = d.topOffset;
-      apply();   // synchronous — no rAF dependency
+      sticky.style.transition = "none";   // scroll tracking is instant
+      readAnchor();                        // fresh geometry, no rAF dependency
+      apply();
     }
 
-    function onResize() { measure(); apply(); }
+    function onResize() { measure(); readAnchor(); apply(); }
+
+    // Called when the open item changes: reposition immediately (synchronous,
+    // so it works even when rAF is throttled), then run a short bounded rAF
+    // loop to follow the expand animation smoothly. No persistent observer.
+    let following = 0;
+    function onOpenChange() {
+      sticky.style.transition = "transform 280ms cubic-bezier(0.16,1,0.3,1)";
+      readAnchor();
+      apply();
+      following += 1;
+      const myRun = following;
+      const start = (performance && performance.now) ? performance.now() : Date.now();
+      function follow() {
+        if (myRun !== following) return;          // superseded by a newer change
+        readAnchor();
+        apply();
+        const now = (performance && performance.now) ? performance.now() : Date.now();
+        if (now - start < 420) {
+          requestAnimationFrame(follow);
+        } else {
+          sticky.style.transition = "none";
+        }
+      }
+      requestAnimationFrame(follow);
+      // Fallback re-reads in case rAF is throttled (e.g. background tab): the
+      // expand animation runs ~360ms, so catch its mid and end points too.
+      setTimeout(() => { if (myRun === following) { readAnchor(); apply(); } }, 200);
+      setTimeout(() => { if (myRun === following) { readAnchor(); apply(); sticky.style.transition = "none"; } }, 420);
+    }
 
     measure();
+    readAnchor();
     apply();
     window.addEventListener("message", onMessage);
     window.addEventListener("resize", onResize);
-    // Re-measure once webfonts settle (changes the collapsed height).
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(onResize);
-    // Tell the parent we're ready to receive scroll updates.
+    ctlRef.current = onOpenChange;
     try { window.parent.postMessage({ type: "explain-ready" }, "*"); } catch (err) {}
     return () => {
       window.removeEventListener("message", onMessage);
       window.removeEventListener("resize", onResize);
+      following += 1;   // stop any in-flight follow loop
+      ctlRef.current = null;
     };
   }, []);
+
+  // Re-position smoothly whenever the open accordion item changes.
+  React.useEffect(() => {
+    if (ctlRef.current) ctlRef.current();
+  }, [openTopic]);
 
   return (
     <section ref={sectionRef} data-explain-panel style={{
