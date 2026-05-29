@@ -214,34 +214,39 @@ const ExplainPanel = ({ openTopic, setOpenTopic }) => {
   const stickyRef = React.useRef(null);
 
   // When embedded in a full-height iframe, the iframe document never scrolls,
-  // so CSS `position: sticky` can't fire. The parent page posts its scroll
-  // position (plus its header height and viewport height); we translate the
-  // panel to stay pinned just below the header, and release at the panel's
-  // bottom. If the open content is taller than the space below the header we
-  // drop stickiness entirely so its bottom stays reachable by scrolling.
+  // so CSS `position: sticky` can't fire. The parent posts its scroll position,
+  // header height and viewport height; we translate the panel to behave like a
+  // smart sticky sidebar:
+  //   - content shorter than the space below the header  -> pin below header
+  //   - content taller -> scroll with the page until its bottom is reached,
+  //     then pin the bottom; pin the top again when scrolling back up.
   React.useEffect(() => {
     const section = sectionRef.current;
     const sticky = stickyRef.current;
     if (!section || !sticky) return;
-    let frame = 0;
     const last = { iframeTop: 0, viewportH: window.innerHeight, topOffset: 0 };
+    // Heights are cached and refreshed only when they actually change, so the
+    // scroll handler never forces layout on every event.
+    let contentH = sticky.offsetHeight;
+    let colH = section.offsetHeight;
 
     function apply() {
-      const avail = last.viewportH - last.topOffset;
-      let shift;
-      if (sticky.offsetHeight > avail) {
-        // Content doesn't fit below the header — let it scroll naturally.
-        shift = 0;
-      } else {
-        const maxShift = Math.max(0, section.offsetHeight - sticky.offsetHeight);
-        shift = Math.min(Math.max(0, last.topOffset - last.iframeTop), maxShift);
-      }
-      sticky.style.transform = "translateY(" + shift + "px)";
-    }
+      const it = last.iframeTop;              // iframe top in viewport coords
+      const topLimit = last.topOffset;        // pin line (below header)
+      const avail = last.viewportH - topLimit;
+      const maxShift = Math.max(0, colH - contentH); // furthest it can travel
 
-    function schedule() {
-      cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(apply);
+      // Desired position of the panel's TOP in viewport coordinates:
+      //  - fits below the header -> pin just under the header
+      //  - taller than viewport  -> pin its BOTTOM to the viewport bottom, so
+      //    it scrolls naturally until its end is reached. Purely position-based,
+      //    so scrolling back up reveals the top again (no hysteresis).
+      const target = contentH <= avail ? topLimit : (last.viewportH - contentH);
+
+      let shift = target - it;
+      if (shift < 0) shift = 0;                // never above its natural top
+      if (shift > maxShift) shift = maxShift;  // release at the column's bottom
+      sticky.style.transform = "translateY(" + shift + "px)";
     }
 
     function onMessage(e) {
@@ -250,19 +255,25 @@ const ExplainPanel = ({ openTopic, setOpenTopic }) => {
       last.iframeTop = d.iframeTop || 0;
       if (typeof d.viewportH === "number") last.viewportH = d.viewportH;
       if (typeof d.topOffset === "number") last.topOffset = d.topOffset;
-      schedule();
+      apply();   // synchronous — no rAF dependency
+    }
+
+    function remeasure() {
+      contentH = sticky.offsetHeight;
+      colH = section.offsetHeight;
+      apply();
     }
 
     window.addEventListener("message", onMessage);
-    // Re-apply when the panel's own height changes (accordion open/close).
-    const ro = window.ResizeObserver ? new ResizeObserver(schedule) : null;
-    if (ro) ro.observe(sticky);
+    // Re-measure + re-apply when heights change (accordion open/close, fonts).
+    const ro = window.ResizeObserver ? new ResizeObserver(remeasure) : null;
+    if (ro) { ro.observe(sticky); ro.observe(section); }
+    apply();
     // Tell the parent we're ready to receive scroll updates.
     try { window.parent.postMessage({ type: "explain-ready" }, "*"); } catch (err) {}
     return () => {
       window.removeEventListener("message", onMessage);
       if (ro) ro.disconnect();
-      cancelAnimationFrame(frame);
     };
   }, []);
 
