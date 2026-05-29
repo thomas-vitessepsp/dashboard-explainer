@@ -214,36 +214,32 @@ const ExplainPanel = ({ openTopic, setOpenTopic }) => {
   const stickyRef = React.useRef(null);
 
   // When embedded in a full-height iframe, the iframe document never scrolls,
-  // so CSS `position: sticky` can't fire. The parent posts its scroll position,
-  // header height and viewport height; we translate the panel to behave like a
-  // smart sticky sidebar:
-  //   - content shorter than the space below the header  -> pin below header
-  //   - content taller -> scroll with the page until its bottom is reached,
-  //     then pin the bottom; pin the top again when scrolling back up.
+  // so CSS `position: sticky` can't fire. The parent posts its scroll position
+  // and header height; we translate the panel to stay pinned just below the
+  // header, releasing only at the bottom of its column. The pin is independent
+  // of the panel's own height, so expanding an accordion never moves it.
   React.useEffect(() => {
     const section = sectionRef.current;
     const sticky = stickyRef.current;
     if (!section || !sticky) return;
     const last = { iframeTop: 0, viewportH: window.innerHeight, topOffset: 0 };
-    // Heights are cached and refreshed only when they actually change, so the
-    // scroll handler never forces layout on every event.
-    let contentH = sticky.offsetHeight;
-    let colH = section.offsetHeight;
+    // The travel distance is frozen against the COLLAPSED panel height and the
+    // column height, both of which are stable while the user interacts. We
+    // deliberately ignore accordion open/close height changes here: the pin
+    // target depends only on the header offset, so opening an item (e.g. by
+    // hovering a widget) never repositions the panel.
+    let maxShift = 0;
+    function measure() {
+      const colH = section.offsetHeight;       // full column (driven by widgets)
+      const contentH = sticky.offsetHeight;    // current panel height
+      maxShift = Math.max(0, colH - contentH); // furthest it can travel down
+    }
 
     function apply() {
-      const it = last.iframeTop;              // iframe top in viewport coords
-      const topLimit = last.topOffset;        // pin line (below header)
-      const avail = last.viewportH - topLimit;
-      const maxShift = Math.max(0, colH - contentH); // furthest it can travel
-
-      // Desired position of the panel's TOP in viewport coordinates:
-      //  - fits below the header -> pin just under the header
-      //  - taller than viewport  -> pin its BOTTOM to the viewport bottom, so
-      //    it scrolls naturally until its end is reached. Purely position-based,
-      //    so scrolling back up reveals the top again (no hysteresis).
-      const target = contentH <= avail ? topLimit : (last.viewportH - contentH);
-
-      let shift = target - it;
+      const it = last.iframeTop;               // iframe top in viewport coords
+      // Pin the panel just below the header. Target is independent of content
+      // height, so it stays put when an accordion expands.
+      let shift = last.topOffset - it;
       if (shift < 0) shift = 0;                // never above its natural top
       if (shift > maxShift) shift = maxShift;  // release at the column's bottom
       sticky.style.transform = "translateY(" + shift + "px)";
@@ -258,22 +254,19 @@ const ExplainPanel = ({ openTopic, setOpenTopic }) => {
       apply();   // synchronous — no rAF dependency
     }
 
-    function remeasure() {
-      contentH = sticky.offsetHeight;
-      colH = section.offsetHeight;
-      apply();
-    }
+    function onResize() { measure(); apply(); }
 
-    window.addEventListener("message", onMessage);
-    // Re-measure + re-apply when heights change (accordion open/close, fonts).
-    const ro = window.ResizeObserver ? new ResizeObserver(remeasure) : null;
-    if (ro) { ro.observe(sticky); ro.observe(section); }
+    measure();
     apply();
+    window.addEventListener("message", onMessage);
+    window.addEventListener("resize", onResize);
+    // Re-measure once webfonts settle (changes the collapsed height).
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(onResize);
     // Tell the parent we're ready to receive scroll updates.
     try { window.parent.postMessage({ type: "explain-ready" }, "*"); } catch (err) {}
     return () => {
       window.removeEventListener("message", onMessage);
-      if (ro) ro.disconnect();
+      window.removeEventListener("resize", onResize);
     };
   }, []);
 
