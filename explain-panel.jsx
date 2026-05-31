@@ -211,7 +211,7 @@ const AccordionItem = ({ topic, open, onClick, index }) => {
 
 };
 
-const ExplainPanel = ({ openTopic, setOpenTopic }) => {
+const ExplainPanel = ({ openTopic, setOpenTopic, isHidden }) => {
   const sectionRef = React.useRef(null);
   const stickyRef = React.useRef(null);
 
@@ -340,6 +340,8 @@ const ExplainPanel = ({ openTopic, setOpenTopic }) => {
   React.useEffect(() => {
     if (ctlRef.current) ctlRef.current();
   }, [openTopic]);
+
+  if (isHidden) return null;
 
   return (
     <section ref={sectionRef} data-explain-panel style={{

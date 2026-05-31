@@ -405,6 +405,22 @@ const Dashboard = () => {
   // A widget is "active" (animating + highlighted) when it's hovered OR when its
   // accordion item is open — but hover no longer feeds the accordion.
   const activeTopic = hoverTopic || openTopic;
+  // Below this width the explanation panel is hidden and the dashboard takes the
+  // full width on its own (the panel's hover/scroll behaviour doesn't suit a
+  // narrow, touch viewport).
+  const [isMobile, setIsMobile] = React.useState(
+    () => typeof window !== "undefined" && window.matchMedia("(max-width: 760px)").matches
+  );
+  React.useEffect(() => {
+    const mq = window.matchMedia("(max-width: 760px)");
+    const handler = (e) => setIsMobile(e.matches);
+    if (mq.addEventListener) mq.addEventListener("change", handler);
+    else mq.addListener(handler);
+    return () => {
+      if (mq.removeEventListener) mq.removeEventListener("change", handler);
+      else mq.removeListener(handler);
+    };
+  }, []);
   const kpisA = useTopicProgress(activeTopic === "kpis");
   const balanceA = useTopicProgress(activeTopic === "balance");
   const fundA = useTopicProgress(activeTopic === "fund");
@@ -446,8 +462,8 @@ const Dashboard = () => {
       fontFamily: "var(--font-body)",
       color: "#0A0A0A"
     }}>
-    <ExplainPanel openTopic={openTopic} setOpenTopic={setOpenTopic} />
-    <main style={{ flex: "1 1 900px", minWidth: 0, padding: "28px 36px 40px", display: "flex", flexDirection: "column", gap: 24 }}>
+    <ExplainPanel openTopic={openTopic} setOpenTopic={setOpenTopic} isHidden={isMobile} />
+    <main style={{ flex: "1 1 900px", minWidth: 0, padding: isMobile ? "24px 18px 36px" : "28px 36px 40px", display: "flex", flexDirection: "column", gap: 24 }}>
       <h1 style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: 28, fontWeight: 400, letterSpacing: "-0.04em" }}>Portfolio Overview</h1>
 
       {/* filters */}
