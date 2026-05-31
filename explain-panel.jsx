@@ -75,7 +75,9 @@ const AccordionItem = ({ topic, open, onClick, index }) => {
   const numStr = String(index + 1).padStart(2, "0");
   return (
     <div style={{
-      borderBottom: "1px solid rgba(10,10,10,0.10)",
+      borderBottom: open ? "1px solid transparent" : "1px solid rgba(10,10,10,0.10)",
+      background: open ? "#F3EBF8" : "transparent",
+      borderRadius: open ? 12 : 0,
       transition: "background 240ms cubic-bezier(0.4,0,0.2,1)"
     }}>
       <button
@@ -83,7 +85,7 @@ const AccordionItem = ({ topic, open, onClick, index }) => {
         aria-expanded={open}
         style={{
           width: "100%",
-          padding: "20px 4px",
+          padding: "12px 14px",
           display: "flex",
           alignItems: "center",
           gap: 16,
@@ -136,13 +138,13 @@ const AccordionItem = ({ topic, open, onClick, index }) => {
       }}>
         <div style={{ overflow: "hidden" }}>
           <div style={{
-            padding: "4px 4px 26px 38px",
+            padding: "0 14px 18px 48px",
             opacity: open ? 1 : 0,
             transform: open ? "translateY(0)" : "translateY(-6px)",
             transition: "opacity 320ms ease, transform 320ms cubic-bezier(0.16,1,0.3,1)"
           }}>
             <h3 style={{
-              margin: "0 0 14px",
+              margin: "0 0 10px",
               fontFamily: "var(--font-display)",
               fontSize: 25,
               fontWeight: 400,
@@ -154,7 +156,7 @@ const AccordionItem = ({ topic, open, onClick, index }) => {
               {topic.title}
             </h3>
             <p style={{
-              margin: "0 0 22px",
+              margin: "0 0 16px",
               fontSize: 14,
               lineHeight: 1.55,
               color: "#3C3640",
@@ -165,8 +167,8 @@ const AccordionItem = ({ topic, open, onClick, index }) => {
               {topic.desc}
             </p>
             <div style={{
-              display: "flex", flexDirection: "column", gap: 10,
-              paddingTop: 16,
+              display: "flex", flexDirection: "column", gap: 8,
+              paddingTop: 12,
               borderTop: "1px solid rgba(10,10,10,0.08)"
             }}>
               <div style={{
@@ -350,14 +352,6 @@ const ExplainPanel = ({ openTopic, setOpenTopic }) => {
         willChange: "transform",
         padding: "28px 28px 40px"
       }}>
-      <div style={{
-        textTransform: "uppercase",
-        fontSize: 12,
-        letterSpacing: "0.16em",
-        color: "#831FBF",
-        marginBottom: 14,
-        fontWeight: 500
-      }}>TREASURY INSIGHTS DASHBOARD</div>
       <h1 style={{
         margin: 0,
         fontFamily: "var(--font-display)",

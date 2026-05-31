@@ -419,12 +419,13 @@ const Dashboard = () => {
   const closeTimer = React.useRef(null);
   const cancelClose = () => { if (closeTimer.current) { clearTimeout(closeTimer.current); closeTimer.current = null; } };
   const hoverProps = (id) => ({
-    onMouseEnter: () => { cancelClose(); setHoverTopic(id); },
-    onMouseMove: () => { cancelClose(); setHoverTopic((cur) => cur === id ? cur : id); },
+    onMouseEnter: () => { cancelClose(); setHoverTopic(id); setOpenTopic(id); },
+    onMouseMove: () => { cancelClose(); setHoverTopic((cur) => cur === id ? cur : id); setOpenTopic((cur) => cur === id ? cur : id); },
     onMouseLeave: () => {
       cancelClose();
       closeTimer.current = setTimeout(() => {
         setHoverTopic((cur) => cur === id ? null : cur);
+        setOpenTopic((cur) => cur === id ? null : cur);
         closeTimer.current = null;
       }, 220);
     }
