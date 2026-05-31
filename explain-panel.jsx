@@ -251,10 +251,15 @@ const ExplainPanel = ({ openTopic, setOpenTopic }) => {
       const it = last.iframeTop;
       const top = last.topOffset;
       const vh = last.viewportH;
+      // Travel limit measured LIVE against the current panel height — which
+      // includes whatever accordion item is open. This guarantees the panel's
+      // bottom can never be pushed past the column (dashboard) bottom, so an
+      // open item never spills below the embed or inflates the document height.
+      const maxShiftNow = Math.max(0, section.offsetHeight - sticky.offsetHeight);
       // Base: pin the panel just below the header.
       let pin = top - it;
       if (pin < 0) pin = 0;
-      if (pin > maxShift) pin = maxShift;
+      if (pin > maxShiftNow) pin = maxShiftNow;
       let shift = pin;
       // If an open item's content runs past the viewport bottom, move the panel
       // up so the item's BOTTOM lines up with the viewport bottom — bringing the
@@ -269,7 +274,7 @@ const ExplainPanel = ({ openTopic, setOpenTopic }) => {
         }
       }
       if (shift < 0) shift = 0;
-      if (shift > maxShift) shift = maxShift;
+      if (shift > maxShiftNow) shift = maxShiftNow;
       sticky.style.transform = "translateY(" + shift + "px)";
     }
 
