@@ -397,29 +397,34 @@ const HINTS = {
 
 // ---------- main view ----------
 const Dashboard = () => {
+  // Accordion open state is driven ONLY by clicking items in the explain panel.
   const [openTopic, setOpenTopic] = React.useState(null);
-  const kpisA = useTopicProgress(openTopic === "kpis");
-  const balanceA = useTopicProgress(openTopic === "balance");
-  const fundA = useTopicProgress(openTopic === "fund");
-  const paymentsA = useTopicProgress(openTopic === "payments");
-  const tpaA = useTopicProgress(openTopic === "tpa");
-  const runwayA = useTopicProgress(openTopic === "runway");
-  const isActive = (id) => openTopic === id;
-  // Hover hysteresis: a transient mouseleave (caused by the accordion / box-shadow
-  // transition momentarily shifting the pointer's hit-test, or any sub-pixel
-  // reflow) must NOT immediately collapse the open topic — otherwise the layout
-  // reverts, the cursor lands back on the widget, and it re-opens: a trembling
-  // feedback loop. We debounce the close and cancel it the instant the pointer
-  // re-enters any widget, so the state stays stable and nothing oscillates.
+  // Widget hover state is independent: hovering a dashboard widget animates that
+  // widget (and highlights it) but never opens or selects an accordion item.
+  const [hoverTopic, setHoverTopic] = React.useState(null);
+  // A widget is "active" (animating + highlighted) when it's hovered OR when its
+  // accordion item is open — but hover no longer feeds the accordion.
+  const activeTopic = hoverTopic || openTopic;
+  const kpisA = useTopicProgress(activeTopic === "kpis");
+  const balanceA = useTopicProgress(activeTopic === "balance");
+  const fundA = useTopicProgress(activeTopic === "fund");
+  const paymentsA = useTopicProgress(activeTopic === "payments");
+  const tpaA = useTopicProgress(activeTopic === "tpa");
+  const runwayA = useTopicProgress(activeTopic === "runway");
+  const isActive = (id) => activeTopic === id;
+  // Hover hysteresis: a transient mouseleave (caused by the box-shadow transition
+  // momentarily shifting the pointer's hit-test, or any sub-pixel reflow) must
+  // NOT immediately collapse the hovered topic. We debounce the close and cancel
+  // it the instant the pointer re-enters any widget, so nothing oscillates.
   const closeTimer = React.useRef(null);
   const cancelClose = () => { if (closeTimer.current) { clearTimeout(closeTimer.current); closeTimer.current = null; } };
   const hoverProps = (id) => ({
-    onMouseEnter: () => { cancelClose(); setOpenTopic(id); },
-    onMouseMove: () => { cancelClose(); setOpenTopic((cur) => cur === id ? cur : id); },
+    onMouseEnter: () => { cancelClose(); setHoverTopic(id); },
+    onMouseMove: () => { cancelClose(); setHoverTopic((cur) => cur === id ? cur : id); },
     onMouseLeave: () => {
       cancelClose();
       closeTimer.current = setTimeout(() => {
-        setOpenTopic((cur) => cur === id ? null : cur);
+        setHoverTopic((cur) => cur === id ? null : cur);
         closeTimer.current = null;
       }, 220);
     }
@@ -441,7 +446,7 @@ const Dashboard = () => {
       color: "#0A0A0A"
     }}>
     <ExplainPanel openTopic={openTopic} setOpenTopic={setOpenTopic} />
-    <main style={{ flex: "1 1 900px", minWidth: 0, padding: "28px 36px", display: "flex", flexDirection: "column", gap: 24 }}>
+    <main style={{ flex: "1 1 900px", minWidth: 0, padding: "28px 36px 40px", display: "flex", flexDirection: "column", gap: 24 }}>
       <h1 style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: 28, fontWeight: 400, letterSpacing: "-0.04em" }}>Portfolio Overview</h1>
 
       {/* filters */}

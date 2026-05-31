@@ -255,14 +255,15 @@ const ExplainPanel = ({ openTopic, setOpenTopic }) => {
       if (pin > maxShift) pin = maxShift;
       let shift = pin;
       // If an open item's content runs past the viewport bottom, move the panel
-      // up — but only as far as keeping the item's TOP at the header line.
+      // up so the item's BOTTOM lines up with the viewport bottom — bringing the
+      // whole open item into view. (Clamped to 0 below, so a very tall item that
+      // can't fully fit simply pins to the top instead.)
       if (anchorH > 0) {
         const itemTop = it + pin + anchorTop;
         const itemBottom = itemTop + anchorH;
         const overflow = itemBottom - vh;
         if (overflow > 0) {
-          const room = Math.max(0, itemTop - top);
-          shift = pin - Math.min(overflow, room);
+          shift = pin - overflow;
         }
       }
       if (shift < 0) shift = 0;
