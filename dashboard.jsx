@@ -135,6 +135,21 @@ const Card = ({ children, style, active, ...rest }) =>
 // Metrics, Charts, Tables). Hovering the badge OR the popover keeps it open.
 const HintBadge = ({ title, body, align = "left" }) => {
   const [open, setOpen] = React.useState(false);
+  const tipRef = React.useRef(null);
+  // Horizontal nudge applied once the popover is open, so it never spills past
+  // the viewport edge on narrow / mobile screens regardless of its anchor side.
+  const [dx, setDx] = React.useState(0);
+  React.useLayoutEffect(() => {
+    if (!open) { setDx(0); return; }
+    const el = tipRef.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    const margin = 10;
+    let shift = 0;
+    if (r.right > window.innerWidth - margin) shift = (window.innerWidth - margin) - r.right;
+    else if (r.left < margin) shift = margin - r.left;
+    if (shift !== 0) setDx((prev) => prev + shift);
+  }, [open]);
   return (
     <span
       style={{ position: "relative", display: "inline-flex" }}
@@ -149,24 +164,29 @@ const HintBadge = ({ title, body, align = "left" }) => {
         cursor: "help", userSelect: "none", flex: "0 0 auto",
         transition: "color 180ms cubic-bezier(0.4,0,0.2,1), border-color 180ms cubic-bezier(0.4,0,0.2,1)"
       }}>?</span>
-      {open ? <span role="tooltip" style={{
+      {open ? <span ref={tipRef} role="tooltip" style={{
         position: "absolute",
         top: "calc(100% + 10px)",
         left: align === "right" ? "auto" : -6,
         right: align === "right" ? -6 : "auto",
+        transform: "translateX(" + dx + "px)",
         width: 300,
         maxWidth: "78vw",
-        background: "#FFFFFF",
-        border: "1px solid rgba(10,10,10,0.10)",
-        borderRadius: 14,
-        boxShadow: "0 18px 44px -20px rgba(71,10,104,0.32), 0 2px 8px -5px rgba(10,10,10,0.10)",
-        padding: "15px 17px",
-        zIndex: 60,
-        textAlign: "left",
-        animation: "hintIn 200ms cubic-bezier(0.16,1,0.3,1) both"
+        zIndex: 60
       }}>
-        <div style={{ fontFamily: "var(--font-display)", fontSize: "var(--fs-14)", fontWeight: 600, color: "#0A0A0A", letterSpacing: "-0.01em", marginBottom: 7 }}>{title}</div>
-        <div style={{ fontSize: "var(--fs-13)", lineHeight: 1.55, color: "#3C3640", letterSpacing: "-0.005em" }}>{body}</div>
+        <span style={{
+          display: "block",
+          background: "#FFFFFF",
+          border: "1px solid rgba(10,10,10,0.10)",
+          borderRadius: 14,
+          boxShadow: "0 18px 44px -20px rgba(71,10,104,0.32), 0 2px 8px -5px rgba(10,10,10,0.10)",
+          padding: "15px 17px",
+          textAlign: "left",
+          animation: "hintIn 200ms cubic-bezier(0.16,1,0.3,1) both"
+        }}>
+          <div style={{ fontFamily: "var(--font-display)", fontSize: "var(--fs-14)", fontWeight: 600, color: "#0A0A0A", letterSpacing: "-0.01em", marginBottom: 7 }}>{title}</div>
+          <div style={{ fontSize: "var(--fs-13)", lineHeight: 1.55, color: "#3C3640", letterSpacing: "-0.005em" }}>{body}</div>
+        </span>
       </span> : null}
     </span>);
 
@@ -467,7 +487,7 @@ const Dashboard = () => {
       <h1 style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: 28, fontWeight: 400, letterSpacing: "-0.04em" }}>Portfolio Overview</h1>
 
       {/* filters */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      {!isMobile ? <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <Select leading={<span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>Display currency: <span style={{ width: 22, height: 16, borderRadius: 3, overflow: "hidden", display: "inline-flex" }}>
           <svg viewBox="0 0 60 30" width="22" height="16"><clipPath id="t"><path d="M0 0v30h60V0z" /></clipPath><clipPath id="s"><path d="M30 15h30v15zv15H0zH0V0zV0h30z" /></clipPath><g clipPath="url(#t)"><path d="M0 0v30h60V0z" fill="#012169" /><path d="M0 0l60 30m0-30L0 30" stroke="#fff" strokeWidth="6" /><path d="M0 0l60 30m0-30L0 30" clipPath="url(#s)" stroke="#C8102E" strokeWidth="4" /><path d="M30 0v30M0 15h60" stroke="#fff" strokeWidth="10" /><path d="M30 0v30M0 15h60" stroke="#C8102E" strokeWidth="6" /></g></svg>
         </span></span>} />
@@ -475,10 +495,10 @@ const Dashboard = () => {
           <Select>Last 3 months</Select>
           <Select>Account Currency</Select>
         </div>
-      </div>
+      </div> : null}
 
       {/* KPI row */}
-      <div {...hoverProps("kpis")} style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: 16 }}>
+      <div {...hoverProps("kpis")} style={{ display: "grid", gridTemplateColumns: isMobile ? "repeat(2, minmax(0, 1fr))" : "repeat(4, minmax(0, 1fr))", gap: 16 }}>
         <KpiCard label="Fund Balance" value="£7.56M" delta="+14%" deltaDir="up" helper="from previous period" progress={kpisA.p} t={kpisA.t} active={isActive("kpis")} wobbleAmp={0.018} hint={HINTS.fundBalance} />
         <KpiCard label="Number of accounts" value="430" delta="+2.6%" deltaDir="up" helper="from previous period" progress={kpisA.p} t={kpisA.t} active={isActive("kpis")} wobbleAmp={0.012} hint={HINTS.accounts} />
         <KpiCard label="Average payment" value="£5.45K" delta="+1.4%" deltaDir="up" helper="from previous period" progress={kpisA.p} t={kpisA.t} active={isActive("kpis")} wobbleAmp={0.022} hint={HINTS.avgPayment} />
@@ -490,16 +510,16 @@ const Dashboard = () => {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
           <SectionTitle help hint={HINTS.balance}>Balance Trend</SectionTitle>
         </div>
-        <BalanceTrends data={balanceData} width={1560} height={340} progress={balanceA.p} t={balanceA.t} />
+        <BalanceTrends data={balanceData} width={1560} height={isMobile ? 780 : 340} progress={balanceA.p} t={balanceA.t} />
         <div style={{ display: "flex", gap: 24, marginTop: 12 }}>
-          <LegendItem color={PURP.light} label="Fund Balance" swatchShape="line" checkbox />
-          <LegendItem color={PURP.dark} label="Debit" checkbox />
-          <LegendItem color={PURP.base} label="Credit" checkbox />
+          <LegendItem color={PURP.light} label="Fund Balance" swatchShape="line" checkbox={!isMobile} />
+          <LegendItem color={PURP.dark} label="Debit" checkbox={!isMobile} />
+          <LegendItem color={PURP.base} label="Credit" checkbox={!isMobile} />
         </div>
       </Card>
 
       {/* Fund allocation + Payment */}
-      <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 2fr)", gap: 16 }}>
+      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "minmax(0, 1fr) minmax(0, 2fr)", gap: 16 }}>
         <Card active={isActive("fund")} {...hoverProps("fund")}>
           <SectionTitle help hint={HINTS.fund}>Fund holding</SectionTitle>
           <div style={{ marginTop: 4 }}>
@@ -522,18 +542,18 @@ const Dashboard = () => {
         </Card>
         <Card active={isActive("payments")} {...hoverProps("payments")}>
           <SectionTitle help hint={HINTS.payments}>Payments</SectionTitle>
-          <PaymentChart data={paymentData} width={1040} height={360} progress={paymentsA.p} t={paymentsA.t} />
+          <PaymentChart data={paymentData} width={1040} height={isMobile ? 540 : 360} progress={paymentsA.p} t={paymentsA.t} />
           <div style={{ display: "flex", gap: 24, marginTop: 12, flexWrap: "wrap" }}>
             <LegendItem color={PURP.light} label="Payment value" swatchShape="line" />
-            <LegendItem color={PURP.dark} label="£0–£500" checkbox />
-            <LegendItem color={PURP.base} label="£500–£5K" checkbox />
-            <LegendItem color={PURP.pastel} label="Above £5K" checkbox />
+            <LegendItem color={PURP.dark} label="£0–£500" checkbox={!isMobile} />
+            <LegendItem color={PURP.base} label="£500–£5K" checkbox={!isMobile} />
+            <LegendItem color={PURP.pastel} label="Above £5K" checkbox={!isMobile} />
           </div>
         </Card>
       </div>
 
       {/* Top TPA + Runway */}
-      <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: 16, alignItems: "stretch" }}>
+      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "minmax(0, 1fr) minmax(0, 1fr)", gap: 16, alignItems: "stretch" }}>
         <Card active={isActive("tpa")} {...hoverProps("tpa")} style={{ display: "flex", flexDirection: "column" }}>
           <SectionTitle help hint={HINTS.tpa}>Top TPA</SectionTitle>
           <h2 style={{ margin: "8px 0 4px", fontFamily: "var(--font-display)", fontSize: 22, fontWeight: 400, letterSpacing: "-0.04em" }}>Blue Plain Risk Admins</h2>
