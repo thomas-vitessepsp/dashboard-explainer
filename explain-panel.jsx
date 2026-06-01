@@ -65,7 +65,7 @@ const TOPICS = [
   desc: "Every delegated authority, sorted by how many days of payments its current balance can cover at recent run-rate. Fund proactively rather than reacting to an empty account.",
   benefits: [
   "Avoid emergency wires and weekend cash calls",
-  "Avoid idle liquidity in accounts with unnecessarily long runways",
+  "Recover idle liquidity in accounts with unnecessarily long runways",
   "Keep claimants paid without operational bottlenecks"]
 
 }];
