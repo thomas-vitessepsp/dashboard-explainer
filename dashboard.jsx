@@ -1,19 +1,19 @@
 /* Vitesse Insights — refreshed charts */
 
 const balanceData = [
-{ label: "8 Mar", balance: 7.20, debit: 1.10, credit: 0.24 },
-{ label: null, balance: 6.60, debit: 0.38, credit: 0.12 },
-{ label: "22 Mar", balance: 7.40, debit: 1.22, credit: 0.36 },
-{ label: null, balance: 7.70, debit: 0.30, credit: 0.18 },
-{ label: "5 Apr", balance: 7.00, debit: 0.86, credit: 0.60 },
-{ label: null, balance: 7.60, debit: 0.40, credit: 0.14 },
-{ label: "19 Apr", balance: 7.60, debit: 0.96, credit: 0.78 },
-{ label: null, balance: 7.80, debit: 0.28, credit: 0.16 },
-{ label: "3 May", balance: 7.40, debit: 1.08, credit: 0.88 },
-{ label: null, balance: 7.70, debit: 0.42, credit: 0.20 },
-{ label: "17 May", balance: 7.90, debit: 1.18, credit: 0.96 },
-{ label: null, balance: 7.30, debit: 0.96, credit: 0.24 },
-{ label: "27 May", balance: 8.00, debit: 0.64, credit: 0.38, partial: true }];
+{ label: "8 Mar", balance: 14.40, debit: 1.10, credit: 0.24 },
+{ label: null, balance: 13.20, debit: 0.38, credit: 0.12 },
+{ label: "22 Mar", balance: 14.80, debit: 1.22, credit: 0.36 },
+{ label: null, balance: 15.40, debit: 0.30, credit: 0.18 },
+{ label: "5 Apr", balance: 14.00, debit: 0.86, credit: 0.60 },
+{ label: null, balance: 15.20, debit: 0.40, credit: 0.14 },
+{ label: "19 Apr", balance: 15.20, debit: 0.96, credit: 0.78 },
+{ label: null, balance: 15.60, debit: 0.28, credit: 0.16 },
+{ label: "3 May", balance: 14.80, debit: 1.08, credit: 0.88 },
+{ label: null, balance: 15.40, debit: 0.42, credit: 0.20 },
+{ label: "17 May", balance: 15.80, debit: 1.18, credit: 0.96 },
+{ label: null, balance: 14.60, debit: 0.96, credit: 0.24 },
+{ label: "27 May", balance: 16.00, debit: 0.64, credit: 0.38, partial: true }];
 
 
 const fundData = [
@@ -43,7 +43,7 @@ const paymentData = [
 
 const tpaGroups = [
 { label: "Fund balance", values: [3.46, 2.24, 0.80], unit: "M" },
-{ label: "Number of accounts", values: [32, 18, 9] },
+{ label: "Number of accounts", values: [18, 12, 6] },
 { label: "Avg. runway", values: [42, 51, 47], unit: "d" }];
 
 const tpaSeries = [
@@ -552,8 +552,8 @@ const Dashboard = () => {
 
       {/* KPI row */}
       <div data-topic="kpis" {...hoverProps("kpis")} style={{ display: "grid", gridTemplateColumns: isMobile ? "repeat(2, minmax(0, 1fr))" : "repeat(4, minmax(0, 1fr))", gap: 16 }}>
-        <KpiCard label="Fund Balance" value="£14.56M" delta="+14%" deltaDir="up" helper="from previous period" progress={kpisA.p} t={kpisA.t} active={isActive("kpis")} wobbleAmp={0.018} hint={HINTS.fundBalance} />
-        <KpiCard label="Number of accounts" value="83" delta="+2.6%" deltaDir="up" helper="from previous period" progress={kpisA.p} t={kpisA.t} active={isActive("kpis")} wobbleAmp={0.012} hint={HINTS.accounts} />
+        <KpiCard label="Fund Balance" value="£15.12M" delta="+14%" deltaDir="up" helper="from previous period" progress={kpisA.p} t={kpisA.t} active={isActive("kpis")} wobbleAmp={0.018} hint={HINTS.fundBalance} />
+        <KpiCard label="Number of accounts" value="86" delta="+2.6%" deltaDir="up" helper="from previous period" progress={kpisA.p} t={kpisA.t} active={isActive("kpis")} wobbleAmp={0.012} hint={HINTS.accounts} />
         <KpiCard label="Average payment" value="£5.45K" delta="+1.4%" deltaDir="up" helper="from previous period" progress={kpisA.p} t={kpisA.t} active={isActive("kpis")} wobbleAmp={0.022} hint={HINTS.avgPayment} />
         <KpiCard label="Payment success rate" value="99.13%" delta="-0.03 pp" deltaDir="down" helper="from previous period" progress={kpisA.p} t={kpisA.t} active={isActive("kpis")} wobbleAmp={0.005} clampMax={99.99} hint={HINTS.successRate} hintAlign="right" />
       </div>
