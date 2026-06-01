@@ -29,7 +29,7 @@ const TOPICS = [
   id: "fund",
   label: "Fund holding",
   title: "Know where your money sits.",
-  desc: "Break the total balance down by currency. One ring, every concentration risk in plain sight.",
+  desc: "Break the total balance down by currency and account type. One ring, every concentration risk in plain sight.",
   benefits: [
   "Catch FX over-exposure before it costs you",
   "Right-size buffers per currency and jurisdiction",
