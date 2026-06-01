@@ -18,7 +18,7 @@ const TOPICS = [
   id: "balance",
   label: "Balance and credits / debits",
   title: "See cash move, day by day.",
-  desc: "The fund-balance line plots your aggregate position across the period. Paired bars beneath it expose every credit in and debit out. One view answers both \"how much do we hold?\" and \"what moved it?\"",
+  desc: "The fund balance line plots your aggregate position across the period. Paired bars beneath it expose every credit in and debit out. One view answers both \"how much do we hold?\" and \"what moved it?\"",
   benefits: [
   "Support treasury decisions with historical context",
   "Identify funding requirements before they impact operations",
@@ -64,8 +64,8 @@ const TOPICS = [
   title: "Days until the next cash call.",
   desc: "Every delegated authority, sorted by how many days of payments its current balance can cover at recent run-rate. Fund proactively rather than reacting to an empty account.",
   benefits: [
-  "Optimise your funding processes",
   "Avoid emergency wires and weekend cash calls",
+  "Avoid idle liquidity in accounts with unnecessarily long runways",
   "Keep claimants paid without operational bottlenecks"]
 
 }];
