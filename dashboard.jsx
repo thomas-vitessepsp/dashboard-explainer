@@ -572,7 +572,7 @@ const Dashboard = () => {
       </Card>
 
       {/* Fund allocation + Payment */}
-      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "minmax(0, 1fr) minmax(0, 2fr)", gap: 16 }}>
+      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "minmax(0, 1fr)" : "minmax(0, 1fr) minmax(0, 2fr)", gap: 16 }}>
         <Card data-topic="fund" active={isActive("fund")} {...hoverProps("fund")}>
           <SectionTitle help hint={HINTS.fund}>Fund holding</SectionTitle>
           <div style={{ marginTop: 4 }}>
@@ -608,7 +608,7 @@ const Dashboard = () => {
       </div>
 
       {/* Top TPA + Runway */}
-      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "minmax(0, 1fr) minmax(0, 1fr)", gap: 16, alignItems: "stretch" }}>
+      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "minmax(0, 1fr)" : "minmax(0, 1fr) minmax(0, 1fr)", gap: 16, alignItems: "stretch" }}>
         <Card data-topic="tpa" active={isActive("tpa")} {...hoverProps("tpa")} style={{ display: "flex", flexDirection: "column" }}>
           <SectionTitle help hint={HINTS.tpa}>Top TPA</SectionTitle>
           <h2 style={{ margin: "8px 0 4px", fontFamily: "var(--font-display)", fontSize: 22, fontWeight: 400, letterSpacing: "-0.04em" }}>Blue Plain Risk Admins</h2>
