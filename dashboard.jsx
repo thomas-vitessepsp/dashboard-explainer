@@ -552,8 +552,8 @@ const Dashboard = () => {
 
       {/* KPI row */}
       <div data-topic="kpis" {...hoverProps("kpis")} style={{ display: "grid", gridTemplateColumns: isMobile ? "repeat(2, minmax(0, 1fr))" : "repeat(4, minmax(0, 1fr))", gap: 16 }}>
-        <KpiCard label="Fund Balance" value="£7.56M" delta="+14%" deltaDir="up" helper="from previous period" progress={kpisA.p} t={kpisA.t} active={isActive("kpis")} wobbleAmp={0.018} hint={HINTS.fundBalance} />
-        <KpiCard label="Number of accounts" value="43" delta="+2.6%" deltaDir="up" helper="from previous period" progress={kpisA.p} t={kpisA.t} active={isActive("kpis")} wobbleAmp={0.012} hint={HINTS.accounts} />
+        <KpiCard label="Fund Balance" value="£14.56M" delta="+14%" deltaDir="up" helper="from previous period" progress={kpisA.p} t={kpisA.t} active={isActive("kpis")} wobbleAmp={0.018} hint={HINTS.fundBalance} />
+        <KpiCard label="Number of accounts" value="83" delta="+2.6%" deltaDir="up" helper="from previous period" progress={kpisA.p} t={kpisA.t} active={isActive("kpis")} wobbleAmp={0.012} hint={HINTS.accounts} />
         <KpiCard label="Average payment" value="£5.45K" delta="+1.4%" deltaDir="up" helper="from previous period" progress={kpisA.p} t={kpisA.t} active={isActive("kpis")} wobbleAmp={0.022} hint={HINTS.avgPayment} />
         <KpiCard label="Payment success rate" value="99.13%" delta="-0.03 pp" deltaDir="down" helper="from previous period" progress={kpisA.p} t={kpisA.t} active={isActive("kpis")} wobbleAmp={0.005} clampMax={99.99} hint={HINTS.successRate} hintAlign="right" />
       </div>
