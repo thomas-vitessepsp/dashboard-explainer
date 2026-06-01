@@ -142,7 +142,7 @@ const BalanceTrends = ({ data: rawData, width = 1100, height = 320, progress = 1
   const h = height - padT - padB;
 
   // headroom above max data value so the line never kisses the top gridline
-  const maxBal = 10;
+  const maxBal = 18;
   const maxFlow = 1.6;
 
   const balY = (v) => padT + h - (v / maxBal) * h;
@@ -164,7 +164,7 @@ const BalanceTrends = ({ data: rawData, width = 1100, height = 320, progress = 1
   const linePath = smoothPath(linePts, 0.7);
 
   // ticks chosen to match each axis's true scale
-  const balTicks = [0, 2, 4, 6, 8, 10];
+  const balTicks = [0, 3, 6, 9, 12, 15, 18];
   const flowTicks = [0, 0.4, 0.8, 1.2, 1.6];
 
   const barW = 30;
@@ -234,7 +234,7 @@ const BalanceTrends = ({ data: rawData, width = 1100, height = 320, progress = 1
 // ====================================================================
 // Donut — lightly rounded corners, all segments visible
 // ====================================================================
-const Donut = ({ data: rawData, size = 280, thickness = 44, gap = 0.025, cornerR = 5, progress = 1, t = 0, totalValue = 7.56, totalUnit = "M" }) => {
+const Donut = ({ data: rawData, size = 280, thickness = 44, gap = 0.025, cornerR = 5, progress = 1, t = 0, totalValue = 15.12, totalUnit = "M" }) => {
   const eased = 1 - Math.pow(1 - progress, 3);
   // Jitter each segment's value when the accordion is open; segments rebalance
   // smoothly because total = sum(values).
