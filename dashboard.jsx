@@ -445,34 +445,54 @@ const Dashboard = () => {
   // centre is closest to the middle of the viewport as the user scrolls. That
   // widget becomes the active topic (highlight + animation), mirroring what
   // hover does on desktop.
+  //
+  // IMPORTANT: this page reports its full height to the host, so the iframe is
+  // sized to fit and the *outer* page scrolls — the iframe itself never does.
+  // That means window "scroll" events never fire here and window.innerHeight is
+  // the whole document, not the visible screen. So we can't measure scroll
+  // position directly. IntersectionObserver's intersectionRect, however, always
+  // reflects the element's true on-screen geometry (clipped by the parent
+  // viewport across the iframe boundary), so it works in every embedding:
+  // top-level page, internally-scrolling iframe, or parent-scrolled full-height
+  // iframe.
   React.useEffect(() => {
-    if (!isMobile) return;
-    let ticking = false;
-    const pick = () => {
-      const els = Array.from(document.querySelectorAll("[data-topic]"));
-      if (!els.length) return;
-      const mid = window.innerHeight / 2;
-      let best = null, bestDist = Infinity;
+    if (!isMobile || typeof IntersectionObserver === "undefined") return;
+    const els = Array.from(document.querySelectorAll("[data-topic]"));
+    if (!els.length) return;
+    const latest = new Map();
+
+    const select = () => {
+      // Reconstruct the visible viewport from the union of the on-screen
+      // (clipped) rects, then pick the widget straddling its centre.
+      let minTop = Infinity, maxBottom = -Infinity;
+      const vis = [];
       els.forEach((el) => {
-        const r = el.getBoundingClientRect();
-        const c = r.top + r.height / 2;
-        const d = Math.abs(c - mid);
-        if (d < bestDist) { bestDist = d; best = el.getAttribute("data-topic"); }
+        const e = latest.get(el);
+        if (!e || !e.isIntersecting) return;
+        const r = e.intersectionRect;
+        if (r.height === 0) return;
+        minTop = Math.min(minTop, r.top);
+        maxBottom = Math.max(maxBottom, r.bottom);
+        vis.push({ topic: el.getAttribute("data-topic"), center: r.top + r.height / 2 });
       });
-      if (best) setOpenTopic((cur) => cur === best ? cur : best);
+      if (!vis.length) return;
+      const viewCenter = (minTop + maxBottom) / 2;
+      let best = null, bestDist = Infinity;
+      vis.forEach((v) => {
+        const d = Math.abs(v.center - viewCenter);
+        if (d < bestDist) { bestDist = d; best = v.topic; }
+      });
+      if (best) setOpenTopic((cur) => (cur === best ? cur : best));
     };
-    const onScroll = () => {
-      if (ticking) return;
-      ticking = true;
-      requestAnimationFrame(() => { ticking = false; pick(); });
-    };
-    pick();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-    };
+
+    const thresholds = [];
+    for (let i = 0; i <= 20; i++) thresholds.push(i / 20);
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => latest.set(e.target, e));
+      select();
+    }, { threshold: thresholds });
+    els.forEach((el) => io.observe(el));
+    return () => io.disconnect();
   }, [isMobile]);
   const kpisA = useTopicProgress(activeTopic === "kpis");
   const balanceA = useTopicProgress(activeTopic === "balance");
