@@ -564,7 +564,7 @@ const Dashboard = () => {
           <SectionTitle help hint={HINTS.balance}>Balance Trend</SectionTitle>
         </div>
         <BalanceTrends data={balanceData} width={1560} height={isMobile ? 780 : 340} progress={balanceA.p} t={balanceA.t} />
-        <div style={{ display: "flex", gap: 12, marginTop: 12, flexWrap: "nowrap", justifyContent: "flex-start" }}>
+        <div style={{ display: "flex", gap: 12, marginTop: 12, flexWrap: isMobile ? "wrap" : "nowrap", justifyContent: "flex-start" }}>
           <LegendItem color={PURP.light} label="Fund Balance" swatchShape="line" compact />
           <LegendItem color={PURP.dark} label="Debit" checkbox={!isMobile} compact />
           <LegendItem color={PURP.base} label="Credit" checkbox={!isMobile} compact />
@@ -597,7 +597,7 @@ const Dashboard = () => {
           <SectionTitle help hint={HINTS.payments}>Payments</SectionTitle>
           <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
             <PaymentChart data={paymentData} width={1040} height={isMobile ? 540 : 430} progress={paymentsA.p} t={paymentsA.t} />
-            <div style={{ display: "flex", gap: 12, marginTop: 12, flexWrap: "nowrap", justifyContent: "flex-start" }}>
+            <div style={{ display: "flex", gap: 12, marginTop: 12, flexWrap: isMobile ? "wrap" : "nowrap", justifyContent: "flex-start" }}>
               <LegendItem color={PURP.light} label="Payment value" swatchShape="line" compact />
               <LegendItem color={PURP.dark} label="£0–£500" checkbox={!isMobile} compact />
               <LegendItem color={PURP.base} label="£500–£5K" checkbox={!isMobile} compact />
