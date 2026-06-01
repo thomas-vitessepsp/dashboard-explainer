@@ -441,6 +441,39 @@ const Dashboard = () => {
       else mq.removeListener(handler);
     };
   }, []);
+  // On mobile there's no hover, so we auto-select the widget whose vertical
+  // centre is closest to the middle of the viewport as the user scrolls. That
+  // widget becomes the active topic (highlight + animation), mirroring what
+  // hover does on desktop.
+  React.useEffect(() => {
+    if (!isMobile) return;
+    let ticking = false;
+    const pick = () => {
+      const els = Array.from(document.querySelectorAll("[data-topic]"));
+      if (!els.length) return;
+      const mid = window.innerHeight / 2;
+      let best = null, bestDist = Infinity;
+      els.forEach((el) => {
+        const r = el.getBoundingClientRect();
+        const c = r.top + r.height / 2;
+        const d = Math.abs(c - mid);
+        if (d < bestDist) { bestDist = d; best = el.getAttribute("data-topic"); }
+      });
+      if (best) setOpenTopic((cur) => cur === best ? cur : best);
+    };
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => { ticking = false; pick(); });
+    };
+    pick();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, [isMobile]);
   const kpisA = useTopicProgress(activeTopic === "kpis");
   const balanceA = useTopicProgress(activeTopic === "balance");
   const fundA = useTopicProgress(activeTopic === "fund");
@@ -498,7 +531,7 @@ const Dashboard = () => {
       </div> : null}
 
       {/* KPI row */}
-      <div {...hoverProps("kpis")} style={{ display: "grid", gridTemplateColumns: isMobile ? "repeat(2, minmax(0, 1fr))" : "repeat(4, minmax(0, 1fr))", gap: 16 }}>
+      <div data-topic="kpis" {...hoverProps("kpis")} style={{ display: "grid", gridTemplateColumns: isMobile ? "repeat(2, minmax(0, 1fr))" : "repeat(4, minmax(0, 1fr))", gap: 16 }}>
         <KpiCard label="Fund Balance" value="£7.56M" delta="+14%" deltaDir="up" helper="from previous period" progress={kpisA.p} t={kpisA.t} active={isActive("kpis")} wobbleAmp={0.018} hint={HINTS.fundBalance} />
         <KpiCard label="Number of accounts" value="430" delta="+2.6%" deltaDir="up" helper="from previous period" progress={kpisA.p} t={kpisA.t} active={isActive("kpis")} wobbleAmp={0.012} hint={HINTS.accounts} />
         <KpiCard label="Average payment" value="£5.45K" delta="+1.4%" deltaDir="up" helper="from previous period" progress={kpisA.p} t={kpisA.t} active={isActive("kpis")} wobbleAmp={0.022} hint={HINTS.avgPayment} />
@@ -506,7 +539,7 @@ const Dashboard = () => {
       </div>
 
       {/* Balance Trends */}
-      <Card active={isActive("balance")} {...hoverProps("balance")}>
+      <Card data-topic="balance" active={isActive("balance")} {...hoverProps("balance")}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
           <SectionTitle help hint={HINTS.balance}>Balance Trend</SectionTitle>
         </div>
@@ -520,7 +553,7 @@ const Dashboard = () => {
 
       {/* Fund allocation + Payment */}
       <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "minmax(0, 1fr) minmax(0, 2fr)", gap: 16 }}>
-        <Card active={isActive("fund")} {...hoverProps("fund")}>
+        <Card data-topic="fund" active={isActive("fund")} {...hoverProps("fund")}>
           <SectionTitle help hint={HINTS.fund}>Fund holding</SectionTitle>
           <div style={{ marginTop: 4 }}>
             <span style={{ display: "inline-flex", alignItems: "center", gap: 4, color: "#831FBF", fontSize: "var(--fs-15)", fontWeight: 500 }}>
@@ -540,7 +573,7 @@ const Dashboard = () => {
             </div>
           </div>
         </Card>
-        <Card active={isActive("payments")} {...hoverProps("payments")}>
+        <Card data-topic="payments" active={isActive("payments")} {...hoverProps("payments")}>
           <SectionTitle help hint={HINTS.payments}>Payments</SectionTitle>
           <PaymentChart data={paymentData} width={1040} height={isMobile ? 540 : 360} progress={paymentsA.p} t={paymentsA.t} />
           <div style={{ display: "flex", gap: 24, marginTop: 12, flexWrap: "wrap" }}>
@@ -554,7 +587,7 @@ const Dashboard = () => {
 
       {/* Top TPA + Runway */}
       <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "minmax(0, 1fr) minmax(0, 1fr)", gap: 16, alignItems: "stretch" }}>
-        <Card active={isActive("tpa")} {...hoverProps("tpa")} style={{ display: "flex", flexDirection: "column" }}>
+        <Card data-topic="tpa" active={isActive("tpa")} {...hoverProps("tpa")} style={{ display: "flex", flexDirection: "column" }}>
           <SectionTitle help hint={HINTS.tpa}>Top TPA</SectionTitle>
           <h2 style={{ margin: "8px 0 4px", fontFamily: "var(--font-display)", fontSize: 22, fontWeight: 400, letterSpacing: "-0.04em" }}>Blue Plain Risk Admins</h2>
           <div style={{ display: "flex", flexWrap: "wrap", gap: "4px 12px", color: "#3C3640", fontSize: "var(--fs-12)" }}>
@@ -574,7 +607,7 @@ const Dashboard = () => {
             )}
           </div>
         </Card>
-        <Card active={isActive("runway")} {...hoverProps("runway")} style={{ padding: 0, display: "flex", flexDirection: "column" }}>
+        <Card data-topic="runway" active={isActive("runway")} {...hoverProps("runway")} style={{ padding: 0, display: "flex", flexDirection: "column" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8, padding: "20px 16px 12px" }}>
             <SectionTitle help hint={HINTS.runway} hintAlign="right">Runway</SectionTitle>
           </div>

@@ -359,26 +359,6 @@ const ExplainPanel = ({ openTopic, setOpenTopic, isHidden }) => {
         willChange: "transform",
         padding: "28px 28px 40px"
       }}>
-      <h1 style={{
-        margin: 0,
-        fontFamily: "var(--font-display)",
-        fontSize: 36,
-        fontWeight: 300,
-        letterSpacing: "-0.04em",
-        lineHeight: 1.05,
-        textWrap: "balance"
-      }}>Where treasury visibility meets operational efficiency.</h1>
-      <p style={{
-        margin: "14px 0 28px",
-        fontSize: 15,
-        lineHeight: 1.5,
-        color: "#3C3640",
-        letterSpacing: "-0.005em",
-        textWrap: "pretty"
-      }}>
-        Six lenses on the same treasury. Explore each topic or hover over a
-        dashboard widget to discover what it reveals and the value it delivers.
-      </p>
       <div style={{ borderTop: "1px solid rgba(10,10,10,0.10)" }}>
         {TOPICS.map((t, i) =>
         <AccordionItem
