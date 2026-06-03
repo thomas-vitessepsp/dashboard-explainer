@@ -403,14 +403,14 @@ const Sidebar = () =>
 
 // ---------- hint content (grounded in docs.vitessepsp.com) ----------
 const HINTS = {
-  fundBalance: { title: "Fund balance", body: "The total fund balance across all active accounts, shown in your selected display currency." },
-  accounts: { title: "Number of accounts", body: "The total number of active accounts across your portfolio." },
-  avgPayment: { title: "Average payment", body: "The average payment value over the selected time period." },
-  successRate: { title: "Payment success rate", body: "The percentage of payments successfully processed during the selected time period." },
-  balance: { title: "Balance trends", body: "Your fund balance, and corresponding credits and debits over the selected period." },
-  fund: { title: "Fund holding", body: "A percentage breakdown of your funds by currency in value." },
+  fundBalance: { title: "Fund balance", body: "Total fund balance across all active accounts, shown in your selected display currency." },
+  accounts: { title: "Number of accounts", body: "Total active accounts across your portfolio, representing programmes and liquidity reserves across your delegated business." },
+  avgPayment: { title: "Average payment", body: "Average payment value over the selected time period." },
+  successRate: { title: "Payment success rate", body: "Percentage of payments successfully processed during the selected time period." },
+  balance: { title: "Balance trends", body: "Fund balance, and corresponding credits and debits over the selected period." },
+  fund: { title: "Fund holding", body: "Percentage breakdown of your funds by currency in value." },
   payments: { title: "Payments", body: "Total payment value over the selected period and currency. The bars show payment volume by size band." },
-  tpa: { title: "Top TPA", body: "The top third-party administrators ranked by the total value of delegated funds. For each, see fund balance, number of accounts, and average runway over the last three months." },
+  tpa: { title: "Top TPA", body: "Top third-party administrators ranked by the total value of delegated funds. For each, see fund balance, number of accounts, and average runway over the last three months." },
   runway: { title: "Account runway", body: "Every account ranked by projected runway, i.e. the days of payments its current balance covers at recent run-rate. Use it as a directional signal for funding planning." }
 };
 
@@ -537,7 +537,7 @@ const Dashboard = () => {
     }}>
     <ExplainPanel openTopic={openTopic} setOpenTopic={setOpenTopic} isHidden={isMobile} />
     <main style={{ flex: "1 1 900px", minWidth: 0, padding: isMobile ? "24px 18px 36px" : "28px 36px 40px", display: "flex", flexDirection: "column", gap: 24 }}>
-      <h1 style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: 28, fontWeight: 400, letterSpacing: "-0.04em" }}>Portfolio Overview</h1>
+      <h1 style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: 28, fontWeight: 400, letterSpacing: "-0.04em" }}>Insurance Portfolio Overview</h1>
 
       {/* filters */}
       {!isMobile ? <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -594,7 +594,7 @@ const Dashboard = () => {
           </div>
         </Card>
         <Card data-topic="payments" active={isActive("payments")} {...hoverProps("payments")} style={{ display: "flex", flexDirection: "column" }}>
-          <SectionTitle help hint={HINTS.payments}>Payments</SectionTitle>
+          <SectionTitle help hint={HINTS.payments}>Claims & Vendor Payments</SectionTitle>
           <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
             <PaymentChart data={paymentData} width={1040} height={isMobile ? 540 : 430} progress={paymentsA.p} t={paymentsA.t} />
             <div style={{ display: "flex", gap: 12, marginTop: 12, flexWrap: isMobile ? "wrap" : "nowrap", justifyContent: "flex-start" }}>
