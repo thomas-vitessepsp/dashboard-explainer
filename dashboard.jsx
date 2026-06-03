@@ -403,8 +403,8 @@ const Sidebar = () =>
 
 // ---------- hint content (grounded in docs.vitessepsp.com) ----------
 const HINTS = {
-  fundBalance: { title: "Fund balance", body: "Total fund balance across all active accounts, shown in your selected display currency." },
-  accounts: { title: "Number of accounts", body: "Total active accounts across your portfolio, representing programmes and liquidity reserves across your delegated business." },
+  fundBalance: { title: "Claim Funds", body: "Total claim funds across active accounts, shown in your selected display currency." },
+  accounts: { title: "Accounts", body: "Total active accounts, representing programmes across your portfolio and liquidity reserves." },
   avgPayment: { title: "Average payment", body: "Average payment value over the selected time period." },
   successRate: { title: "Payment success rate", body: "Percentage of payments successfully processed during the selected time period." },
   balance: { title: "Balance trends", body: "Fund balance, and corresponding credits and debits over the selected period." },
@@ -552,8 +552,8 @@ const Dashboard = () => {
 
       {/* KPI row */}
       <div data-topic="kpis" {...hoverProps("kpis")} style={{ display: "grid", gridTemplateColumns: isMobile ? "repeat(2, minmax(0, 1fr))" : "repeat(4, minmax(0, 1fr))", gap: 16 }}>
-        <KpiCard label="Fund Balance" value="£15.12M" delta="+14%" deltaDir="up" helper="from previous period" progress={kpisA.p} t={kpisA.t} active={isActive("kpis")} wobbleAmp={0.018} hint={HINTS.fundBalance} />
-        <KpiCard label="Number of accounts" value="86" delta="+2.6%" deltaDir="up" helper="from previous period" progress={kpisA.p} t={kpisA.t} active={isActive("kpis")} wobbleAmp={0.012} hint={HINTS.accounts} />
+        <KpiCard label="Claim Funds" value="£15.12M" delta="+14%" deltaDir="up" helper="from previous period" progress={kpisA.p} t={kpisA.t} active={isActive("kpis")} wobbleAmp={0.018} hint={HINTS.fundBalance} />
+        <KpiCard label="Accounts" value="86" delta="+2.6%" deltaDir="up" helper="from previous period" progress={kpisA.p} t={kpisA.t} active={isActive("kpis")} wobbleAmp={0.012} hint={HINTS.accounts} />
         <KpiCard label="Average payment" value="£5.45K" delta="+1.4%" deltaDir="up" helper="from previous period" progress={kpisA.p} t={kpisA.t} active={isActive("kpis")} wobbleAmp={0.022} hint={HINTS.avgPayment} />
         <KpiCard label="Payment success rate" value="99.13%" delta="-0.03 pp" deltaDir="down" helper="from previous period" progress={kpisA.p} t={kpisA.t} active={isActive("kpis")} wobbleAmp={0.005} clampMax={99.99} hint={HINTS.successRate} hintAlign="right" />
       </div>
